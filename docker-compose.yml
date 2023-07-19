@@ -1,0 +1,98 @@
+version: '3.8'
+
+services:
+  php:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - PHP_VERSION=7.4
+    container_name: my_php_container
+    volumes:
+      - ./app:/var/www/html
+      - ./config/php.ini:/usr/local/etc/php/conf.d/custom.ini
+      - ./logs/php:/var/log/php
+      - ./vhost:/etc/apache2/sites-enabled
+    ports:
+      - "80:80"
+    networks:
+      - my_network
+
+  mysql:
+    image: mysql:latest
+    container_name: my_mysql_container
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: my01
+      MYSQL_DATABASE: db_myapp
+      MYSQL_USER: root
+      MYSQL_PASSWORD: my01
+    volumes:
+      - ./mysql-data:/var/lib/mysql
+      - ./logs/mysql:/var/log/mysql
+    ports:
+      - "3307:3306"
+    networks:
+      - my_network
+
+  postgres:
+    image: postgres:9.6
+    container_name: my_postgres_container
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: pg01
+      POSTGRES_DB: db_pgapp
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+      - ./logs/postgres:/var/log/postgres
+    ports:
+      - "5432:5432"
+    networks:
+      - my_network
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: my_pgadmin_container
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: angelolmorais@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: password
+    ports:
+      - "5050:80"
+    networks:
+      - my_network
+
+  mongo:
+    image: mongo:latest
+    container_name: my_mongo_container
+    restart: always
+    volumes:
+      - ./mongo-data:/data/db
+      - ./logs/mongo:/var/log/mongo
+    ports:
+      - "27017:27017"
+    networks:
+      - my_network
+
+  redis:
+    image: redis:latest
+    container_name: my_redis_container
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./redis-data:/data
+    networks:
+      - my_network
+volumes:
+  mysql-data:
+  postgres-data:
+  mongo-data:
+  redis-data:
+  logs:
+    driver: local
+
+networks:
+  my_network:
+    driver: bridge
